@@ -1,0 +1,42 @@
+{
+  "name": "dsh-task-board",
+  "version": "0.1.0",
+  "description": "Task Board plugin for DSH (independent task board UI + store).",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "dsh": {
+    "category": "Memory",
+    "categories": [
+      "Memory"
+    ],
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
+    },
+    "bundle": {
+      "patch": "./dsh.patch.yml"
+    }
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./dsh.patch.yml": "./dsh.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "dsh.patch.yml",
+    "package.json"
+  ],
+  "license": "AGPL-3.0-only",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-settings": ">=0.1.0-rc.6 <0.2",
+    "@deepseek-ai/schemastery": "^3.18.1"
+  }
+}

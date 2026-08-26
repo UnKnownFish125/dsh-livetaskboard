@@ -1,0 +1,4 @@
+# The dsh-task-board bundle patch: registers the independent task board UI surface.
+- insert:
+    - id: task-board
+      name: 'dsh-task-board'
