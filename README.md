@@ -98,9 +98,15 @@ draft → planned → todo → in_progress → review → completed
 | `TASK_BOARD_AID_MODE` | `sol+subagent` | 外援策略（sol / subagent / sol+subagent / none） |
 | `TASK_BOARD_SUBAGENT_MAX_RETRIES` | `2` | 子代理外援最大重试次数（记录用） |
 
+## 与 dsh-deepmemory 的关系
+
+- 本插件为**派生动态任务看板**：任务状态机/存储/看板 UI/外援（sol + 保底子代理）都在本仓库。
+- `dsh-deepmemory`（主体记忆）保留任务系统的持久化接口（`/v1/v2/tasks` API 与状态卡体系），记忆面板不再内嵌任务看板。
+- 看板仅通过接口读取任务数据，两仓库解耦，可独立安装/升级。
+
 ## 开发
 
-- 测试机验证通过：proxy / create / list / 侧栏按钮 / 浮层六栏。
+- 测试机验证通过：proxy / create / list / 侧栏按钮 / 浮层六栏；systemd `dsh-task-board.service` 管理 board server。
 - 与 `dsh-deepmemory`（主体记忆）解耦：任务独立存储，`/task-api` 前缀不冲突 `/mem-api`。
 
 ## 许可
