@@ -100,9 +100,11 @@ draft → planned → todo → in_progress → review → completed
 
 ## 与 dsh-deepmemory 的关系
 
-- 本插件为**派生动态任务看板**：任务状态机/存储/看板 UI/外援（sol + 保底子代理）都在本仓库。
-- `dsh-deepmemory`（主体记忆）保留任务系统的持久化接口（`/v1/v2/tasks` API 与状态卡体系），记忆面板不再内嵌任务看板。
-- 看板仅通过接口读取任务数据，两仓库解耦，可独立安装/升级。
+推荐搭配 **[dsh-deepmemory](https://github.com/UnKnownFish125/dsh-deepmemory)**（DeepSeek Harness 主体长期记忆插件）使用：
+
+- dsh-deepmemory 提供主体记忆（语义召回、实体图谱、状态卡、presets）与任务系统持久化接口；
+- 本插件（动态任务看板）独立承载任务状态机、存储、看板 UI 与外援（sol + 保底子代理）；
+- 二者解耦、可独立安装升级；看板通过接口读取任务数据，搭配使用效果最佳。
 
 ## 开发
 
