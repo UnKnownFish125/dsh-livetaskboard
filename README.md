@@ -69,10 +69,23 @@ draft → planned → todo → in_progress → review → completed
 | POST | `/v1/v2/tasks/<id>/sol-advice` | 写 sol 建议（`advice/expected_version`） |
 | GET | `/v1/health` | 健康 |
 
-## 外援机制（问 sol）
+## 外援机制（sol + 保底子代理，可配置）
 
-- `POST /task-api/v1/v2/tasks/<id>/ask-sol`（经 DSH 代理）：自动发现 DSH 模型目录里的 sol 模型（如 `gpt-5.6-sol`），追问失败任务并写回 `sol_advice`。
-- 保底子代理：为可配置项预留（`aid.mode: sol | subagent | sol+subagent` 待接 DSH subagent），见 docs/（待补充）。
+失败任务（`failed`）可按配置触发外援，`aid.mode` 控制策略：
+
+| mode | 行为 |
+|---|---|
+| `sol` | 仅问 sol（Host 经 DSH 模型目录自动发现 sol 模型，写回 `sol_advice`） |
+| `subagent` | 仅标记子代理外援（`subagent_pending`），由 agent 会话派 DSH 子代理 |
+| `sol+subagent`（默认） | 先问 sol；sol 建议后仍失败/空则标记子代理外援 |
+| `none` | 关闭外援 |
+
+接口：
+- `POST /task-api/v1/v2/tasks/<id>/ask-sol`：Host 调 sol 模型追问，写回 `sol_advice`（`sol_advice` 字段）
+- `POST /task-api/v1/v2/tasks/<id>/subagent-aid`：标记任务 `subagent_pending=1` + `aid_attempts+1`（真正 spawn 由 DSH agent 会话执行，board server 只记录状态）
+- `GET /task-api/v1/v2/config`：返回 `{ aid: { mode, subagent_max_retries } }`
+
+任务字段：`sol_advice`（sol 建议）、`subagent_pending`（待子代理）、`aid_attempts`（外援次数）、`aid_state`（当前外援状态）。
 
 ## 配置（环境变量）
 
@@ -82,6 +95,8 @@ draft → planned → todo → in_progress → review → completed
 | `TASK_BOARD_DB` | `<repo>/data/board.db` | sqlite 路径 |
 | `TASK_BOARD_TOKEN_FILE` | `<repo>/data/api-token` | Bearer token 文件（空则无鉴权） |
 | `TASK_BOARD_TOKEN_FILE`（Host） | `DSH_HOME/.dsh-task-board-token` | Host 代理读 token 的路径 |
+| `TASK_BOARD_AID_MODE` | `sol+subagent` | 外援策略（sol / subagent / sol+subagent / none） |
+| `TASK_BOARD_SUBAGENT_MAX_RETRIES` | `2` | 子代理外援最大重试次数（记录用） |
 
 ## 开发
 

@@ -105,6 +105,14 @@ function TaskBoardSurface(props) {
     else setMsg('sol 询问失败: ' + (res.error || (res && res.advice) || ''))
   }
 
+  async function requestSubagent(task) {
+    setBusy(true); setMsg('正在请求子代理外援 …')
+    const res = await api('POST', '/v1/v2/tasks/' + task.id + '/subagent-aid', { expected_version: task.version })
+    setBusy(false)
+    if (res && res.task) { setMsg('已标记：子代理外援待办（agent 会话将派子代理）'); await load() }
+    else setMsg('子代理外援请求失败: ' + (res.error || ''))
+  }
+
   async function removeTask(task) {
     setConfirmTask(task)
   }
@@ -192,6 +200,7 @@ function TaskBoardSurface(props) {
       out.push(React.createElement('button', { key: 'g', className: danger, onClick: function () { removeTask(task) } }, '删除'))
     }
     if (task.status === 'failed') out.push(React.createElement('button', { key: 's', className: cls, onClick: function () { askSol(task) } }, '🤖 问 sol'))
+    if (task.status === 'failed') out.push(React.createElement('button', { key: 'sb', className: cls, onClick: function () { requestSubagent(task) } }, '👥 派子代理'))
     if (task.status === 'completed' || task.status === 'failed') out.push(React.createElement('button', { key: 'h', className: danger, onClick: function () { removeTask(task) } }, '删除'))
     return out
   }
@@ -263,6 +272,7 @@ function TaskBoardSurface(props) {
                 React.createElement('div', { style: { fontSize: 11, opacity: .6, marginBottom: 6 } }, '会话: ' + sessionTitle(task.session_id)),
                 task.sol_advice ? React.createElement('div', { style: { fontSize: 12, marginBottom: 6, padding: 6, background: 'rgba(78,150,255,.10)', borderRadius: 6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' } }, '💡 sol: ' + task.sol_advice) : null,
                 task.failure_reason ? React.createElement('div', { style: { fontSize: 11, opacity: .7, marginBottom: 6 } }, '失败原因: ' + task.failure_reason) : null,
+                task.subagent_pending ? React.createElement('div', { style: { fontSize: 11, marginBottom: 6, padding: 6, background: 'rgba(226,130,50,.12)', borderRadius: 6 } }, '👥 子代理外援待办（agent 将派子代理）') : null,
                 React.createElement('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } }, taskButtons(task)),
               )
             }) : React.createElement('div', { style: { opacity: .45, fontSize: 12, textAlign: 'center', padding: '18px 0' } }, '（空）'),

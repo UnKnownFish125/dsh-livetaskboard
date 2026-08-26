@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.1.1] - 2026-08-26
+
+### Added
+- 外援配置项：`TASK_BOARD_AID_MODE`（sol / subagent / sol+subagent / none）+ `TASK_BOARD_SUBAGENT_MAX_RETRIES`
+- `POST /v1/v2/tasks/<id>/subagent-aid`：标记失败任务待子代理外援（`subagent_pending`/`aid_attempts`/`aid_state`）
+- `GET /v1/v2/config`：返回外援配置；health 附带 aid_mode
+- 失败卡 UI：「👥 派子代理」按钮 + 子代理待办状态展示
+- 文档：README 外援机制段（sol + 保底子代理 + 可配置）
+
 ## [v0.1.0] - 2026-08-26
 
 ### Added

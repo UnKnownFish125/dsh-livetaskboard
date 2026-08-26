@@ -14,6 +14,10 @@ from board_domain import (
 PORT = int(os.environ.get("TASK_BOARD_PORT", "6250"))
 DB_PATH = os.environ.get("TASK_BOARD_DB", os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "board.db"))
 API_TOKEN_FILE = os.environ.get("TASK_BOARD_TOKEN_FILE", os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "api-token"))
+AID_MODE = os.environ.get("TASK_BOARD_AID_MODE", "sol+subagent").strip().lower()
+if AID_MODE not in ("sol", "subagent", "sol+subagent", "none"):
+    AID_MODE = "sol+subagent"
+SUBAGENT_MAX_RETRIES = int(os.environ.get("TASK_BOARD_SUBAGENT_MAX_RETRIES", "2"))
 
 
 def _read_token():
@@ -80,7 +84,9 @@ class Handler(BaseHTTPRequestHandler):
         path = unquote(self.path.split("?", 1)[0])
         parts = [unquote(part) for part in path.strip("/").split("/")]
         if path == "/v1/health":
-            return self._send(200, {"status": "ok", "service": "task-board"})
+            return self._send(200, {"status": "ok", "service": "task-board", "aid_mode": AID_MODE, "subagent_max_retries": SUBAGENT_MAX_RETRIES})
+        if path == "/v1/v2/config":
+            return self._send(200, {"ok": True, "aid": {"mode": AID_MODE, "subagent_max_retries": SUBAGENT_MAX_RETRIES}})
         if path == "/v1/v2/tasks":
             return self._v2_call(lambda: {"tasks": self._store().list_tasks(
                 workspace_id=parsed.get("workspace_id", [None])[0],
@@ -151,6 +157,12 @@ class Handler(BaseHTTPRequestHandler):
             if parts[4] == "color":
                 return self._v2_call(lambda: {"task": store.set_task_color(
                     task_id, body.get("task_color", "neutral"), int(body["expected_version"]),
+                )})
+            if parts[4] == "subagent-aid":
+                return self._v2_call(lambda: {"task": store.mark_subagent_pending(
+                    task_id, int(body.get("expected_version", 0)),
+                    actor=body.get("actor", "user"),
+                    reason=body.get("reason", "subagent aid requested"),
                 )})
             if parts[4] == "binding":
                 return self._v2_call(lambda: {"task": store.rebind_task(

@@ -105,6 +105,9 @@ def install_schema(conn):
         ("session_id", "TEXT NOT NULL DEFAULT ''"),
         ("deleted_at", "REAL"),
         ("sol_advice", "TEXT NOT NULL DEFAULT ''"),
+        ("subagent_pending", "INTEGER NOT NULL DEFAULT 0"),
+        ("aid_attempts", "INTEGER NOT NULL DEFAULT 0"),
+        ("aid_state", "TEXT NOT NULL DEFAULT ''"),
     ))
     conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_workspace ON tasks(workspace_id,status,updated_at)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_session ON tasks(session_id,updated_at)")
@@ -314,6 +317,28 @@ class TaskBoardStore:
                 row["status"],
                 row["attempt"],
                 {"reason": reason, "actor": actor},
+            )
+        return self.get_task(task_id)
+
+    def mark_subagent_pending(self, task_id, expected_version, actor="user", reason=""):
+        """标记失败任务为「待子代理外援」（DSH agent 会话负责真正 spawn；此处只记录状态）。"""
+        with self._connect() as conn:
+            row = conn.execute("SELECT * FROM tasks WHERE id=?", (task_id,)).fetchone()
+            if row is None:
+                raise NotFoundError(f"task not found: {task_id}")
+            if row["version"] != expected_version:
+                raise ConflictError(
+                    f"task version conflict: expected {expected_version}, current {row['version']}"
+                )
+            conn.execute(
+                "UPDATE tasks SET subagent_pending=1,aid_attempts=aid_attempts+1,"
+                "aid_state='subagent_pending',version=version+1,updated_at=? WHERE id=?",
+                (time.time(), task_id),
+            )
+            self._task_event(
+                conn, task_id, "status_changed", row["status"], row["status"],
+                row["attempt"],
+                {"reason": reason or "subagent aid pending", "actor": actor},
             )
         return self.get_task(task_id)
 
