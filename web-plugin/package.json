@@ -1,5 +1,5 @@
 {
-  "name": "dsh-task-board",
+  "name": "dsh-livetaskboard",
   "version": "0.1.0",
   "description": "Task Board plugin for DSH (independent task board UI + store).",
   "private": true,

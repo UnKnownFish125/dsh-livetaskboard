@@ -1,5 +1,8 @@
+__ModuleLoader__.load({
+  id: 'dsh-livetaskboard',
+  factory: (require) => {
 /** TaskBoard - 独立任务看板 browser plugin（从 deepmemory 提取）。 */
-import * as React from 'react'
+const React = require('react')
 const name = 'deepmemory-task-board'
 
 const PREFIX = '/task-api'
@@ -321,7 +324,7 @@ function TaskBoardSurface(props) {
   )
 }
 
-export function apply(ctx) {
+function apply(ctx) {
   const slots = ctx.get('slots')
   if (slots === undefined) return
   const sessionService = ctx.get('sessions')
@@ -351,3 +354,6 @@ export function apply(ctx) {
     )
   })
 }
+return { name, apply }
+  }
+})
